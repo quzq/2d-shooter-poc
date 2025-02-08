@@ -1,0 +1,22 @@
+{
+  "name": "2d-shooting-game",
+  "version": "1.0.0",
+  "description": "A 2D shooting game project using TypeScript",
+  "main": "dist/bundle.js",
+  "scripts": {
+    "build": "webpack",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "ts-loader": "^9.4.2",
+    "typescript": "^4.9.5",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "keywords": []
+}
