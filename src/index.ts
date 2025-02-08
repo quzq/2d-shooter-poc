@@ -6,10 +6,18 @@ type Rect = Point & {
   width: number;
   height: number;
 };
-type Bullet = Rect & {
+type Group = "green" | "red"; // 所属。所属が異なる場合に当たり判定を行う
+type Body = Rect & {
+  group: Group;
+  hp: number;
+  paralyzing: number; // ダメージ時の麻痺時間
+};
+
+type Bullet = Body & {
   dest: Point;
 };
-type Player = Rect & {
+
+type Player = Body & {
   hp: number;
   speed: number;
   bullets: Bullet[];
@@ -39,6 +47,7 @@ const main = (viewport: HTMLCanvasElement): void => {
   ctx.shadowBlur = 5;
 
   let player: Player = {
+    group: "green",
     x: 32,
     y: viewport.height / 2,
     width: 32,
@@ -48,12 +57,14 @@ const main = (viewport: HTMLCanvasElement): void => {
     bullets: [],
     canShot: true,
     color: "#FF9500",
+    paralyzing: 0,
   };
+
   let enemies: Player[] = [];
 
   let upPressed: boolean = false;
   let downPressed: boolean = false;
-  let spacePressed: boolean = false;
+  let shotPressed: boolean = false;
 
   document.addEventListener(
     "keydown",
@@ -63,7 +74,7 @@ const main = (viewport: HTMLCanvasElement): void => {
       } else if (["Down", "ArrowDown"].includes(e.key)) {
         downPressed = true;
       } else if (["Control"].includes(e.key)) {
-        spacePressed = true;
+        shotPressed = true;
       }
     },
     false
@@ -77,7 +88,7 @@ const main = (viewport: HTMLCanvasElement): void => {
       } else if (["Down", "ArrowDown"].includes(e.key)) {
         downPressed = false;
       } else if (["Control"].includes(e.key)) {
-        spacePressed = false;
+        shotPressed = false;
       }
     },
     false
@@ -99,9 +110,11 @@ const main = (viewport: HTMLCanvasElement): void => {
   };
 
   const draw = () => {
+    // 背景の描画
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, viewport.width, viewport.height);
 
+    // 自機の移動
     const newPlayerY =
       player.y -
       (upPressed && player.y > 0 ? player.speed : 0) +
@@ -110,7 +123,8 @@ const main = (viewport: HTMLCanvasElement): void => {
         : 0);
     player = { ...player, y: newPlayerY };
 
-    if (spacePressed) {
+    // 自機のshot
+    if (shotPressed) {
       if (player.canShot) {
         player = {
           ...player,
@@ -118,11 +132,13 @@ const main = (viewport: HTMLCanvasElement): void => {
           bullets: [
             ...player.bullets,
             {
+              group: player.group,
               x: player.x + player.width,
               y: player.y + player.width / 2,
               width: 8,
               height: 2,
               dest: { x: 8, y: 0 },
+              hp: 1,
             } as Bullet,
           ],
         };
@@ -131,9 +147,10 @@ const main = (viewport: HTMLCanvasElement): void => {
       player = { ...player, canShot: true };
     }
 
+    // 弾丸の描画
     player.bullets = player.bullets
-      .map((i) => {
-        const next: Bullet = { ...i, x: i.x + i.dest.x, y: i.y + i.dest.y };
+      .map((b) => {
+        const next: Bullet = { ...b, x: b.x + b.dest.x, y: b.y + b.dest.y };
         if (
           next.x < 0 ||
           next.y < 0 ||
@@ -149,14 +166,15 @@ const main = (viewport: HTMLCanvasElement): void => {
 
     drawPlayer(player, player.color);
 
-    enemies = enemies.map((i) => {
+    // 敵の描画
+    enemies = enemies.map((e) => {
       const newPoint = {
-        x: i.x + i.width < 0 ? viewport.width * 2 : i.x - i.speed,
+        x: e.x + e.width < 0 ? viewport.width * 2 : e.x - e.speed,
         y:
-          i.y - (player.y < i.y ? i.speed : 0) + (player.y > i.y ? i.speed : 0),
+          e.y - (player.y < e.y ? e.speed : 0) + (player.y > e.y ? e.speed : 0),
       };
 
-      const newBullets = i.bullets
+      const newBullets = e.bullets
         .map((i) => {
           const next: Bullet = { ...i, x: i.x + i.dest.x, y: i.y + i.dest.y };
           if (
@@ -173,23 +191,26 @@ const main = (viewport: HTMLCanvasElement): void => {
         .filter((bullet): bullet is Bullet => bullet !== null);
 
       const newState: Player = {
-        ...i,
+        ...e,
         ...newPoint,
         bullets:
           Math.random() < 0.02
             ? [
                 ...newBullets,
                 {
-                  x: i.x,
-                  y: i.y + i.width / 2,
+                  group: e.group,
+                  x: e.x,
+                  y: e.y + e.width / 2,
                   width: 8,
                   height: 2,
                   dest: { x: -8, y: 0 },
+                  hp: 1,
                 } as Bullet,
               ]
             : newBullets,
       };
-      const enemyRect = { x: i.x, y: i.y, width: i.width, height: i.height };
+
+      const enemyRect = { x: e.x, y: e.y, width: e.width, height: e.height };
       const hit =
         player.bullets
           .map((b) =>
@@ -198,11 +219,12 @@ const main = (viewport: HTMLCanvasElement): void => {
               enemyRect
             )
           )
-          .filter((i) => true).length > 0;
-      drawPlayer(newState, hit ? "white" : i.color);
+          .filter((i) => i).length > 0;
+      drawPlayer(newState, hit ? "white" : e.color);
       return newState;
     });
 
+    // 敵の発生
     if (Math.random() < 0.01) {
       const option = Math.random() * 4;
       const color = `rgb(${Math.random() * 256},${Math.random() * 256},${
@@ -211,6 +233,7 @@ const main = (viewport: HTMLCanvasElement): void => {
       enemies = [
         ...enemies,
         {
+          group: "red",
           x: viewport.width - 32 * 2 - option * 16,
           y: 0,
           width: 16 + 8 * option,
@@ -220,6 +243,7 @@ const main = (viewport: HTMLCanvasElement): void => {
           bullets: [],
           canShot: true,
           color,
+          paralyzing: 0,
         },
       ];
     }
