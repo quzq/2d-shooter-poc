@@ -1,23 +1,23 @@
-type TPoint = {
+type Point = {
   x: number;
   y: number;
 };
-type TRect = TPoint & {
+type Rect = Point & {
   width: number;
   height: number;
 };
-type TBullet = TRect & {
-  dest: TPoint;
+type Bullet = Rect & {
+  dest: Point;
 };
-type TPlayer = TRect & {
+type Player = Rect & {
   hp: number;
   speed: number;
-  bullets: TBullet[];
+  bullets: Bullet[];
   canShot: boolean;
   color: string;
 };
 
-export const hitTestRect = (rect1: TRect, rect2: TRect) => {
+export const hitTestRect = (rect1: Rect, rect2: Rect) => {
   if (
     rect1.x < rect2.x + rect2.width &&
     rect1.x + rect1.width > rect2.x &&
@@ -38,7 +38,7 @@ const main = (viewport: HTMLCanvasElement): void => {
   ctx.shadowOffsetY = 3;
   ctx.shadowBlur = 5;
 
-  let player: TPlayer = {
+  let player: Player = {
     x: 32,
     y: viewport.height / 2,
     width: 32,
@@ -49,7 +49,7 @@ const main = (viewport: HTMLCanvasElement): void => {
     canShot: true,
     color: "#FF9500",
   };
-  let enemies: TPlayer[] = [];
+  let enemies: Player[] = [];
 
   let upPressed: boolean = false;
   let downPressed: boolean = false;
@@ -83,7 +83,7 @@ const main = (viewport: HTMLCanvasElement): void => {
     false
   );
 
-  const drawBox = (r: TRect, color: string) => {
+  const drawBox = (r: Rect, color: string) => {
     ctx.beginPath();
     ctx.rect(r.x, r.y, r.width, r.height);
     ctx.fillStyle = color;
@@ -91,10 +91,10 @@ const main = (viewport: HTMLCanvasElement): void => {
     ctx.closePath();
   };
 
-  const drawPlayer = (p: TPlayer, color: string) => {
+  const drawPlayer = (p: Player, color: string) => {
     drawBox({ x: p.x, y: p.y, width: p.width, height: p.height }, color);
   };
-  const drawBullet = (p: TBullet, color: string) => {
+  const drawBullet = (p: Bullet, color: string) => {
     drawBox({ x: p.x, y: p.y, width: p.width, height: p.height }, color);
   };
 
@@ -123,7 +123,7 @@ const main = (viewport: HTMLCanvasElement): void => {
               width: 8,
               height: 2,
               dest: { x: 8, y: 0 },
-            } as TBullet,
+            } as Bullet,
           ],
         };
       }
@@ -133,7 +133,7 @@ const main = (viewport: HTMLCanvasElement): void => {
 
     player.bullets = player.bullets
       .map((i) => {
-        const next: TBullet = { ...i, x: i.x + i.dest.x, y: i.y + i.dest.y };
+        const next: Bullet = { ...i, x: i.x + i.dest.x, y: i.y + i.dest.y };
         if (
           next.x < 0 ||
           next.y < 0 ||
@@ -145,7 +145,7 @@ const main = (viewport: HTMLCanvasElement): void => {
         drawBullet(next, "white");
         return next;
       })
-      .filter((bullet): bullet is TBullet => bullet !== null);
+      .filter((bullet): bullet is Bullet => bullet !== null);
 
     drawPlayer(player, player.color);
 
@@ -158,7 +158,7 @@ const main = (viewport: HTMLCanvasElement): void => {
 
       const newBullets = i.bullets
         .map((i) => {
-          const next: TBullet = { ...i, x: i.x + i.dest.x, y: i.y + i.dest.y };
+          const next: Bullet = { ...i, x: i.x + i.dest.x, y: i.y + i.dest.y };
           if (
             next.x < 0 ||
             next.y < 0 ||
@@ -170,9 +170,9 @@ const main = (viewport: HTMLCanvasElement): void => {
           drawBullet(next, "white");
           return next;
         })
-        .filter((bullet): bullet is TBullet => bullet !== null);
+        .filter((bullet): bullet is Bullet => bullet !== null);
 
-      const newState: TPlayer = {
+      const newState: Player = {
         ...i,
         ...newPoint,
         bullets:
@@ -185,7 +185,7 @@ const main = (viewport: HTMLCanvasElement): void => {
                   width: 8,
                   height: 2,
                   dest: { x: -8, y: 0 },
-                } as TBullet,
+                } as Bullet,
               ]
             : newBullets,
       };
