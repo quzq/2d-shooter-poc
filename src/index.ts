@@ -1,29 +1,29 @@
-type Point = {
+interface Point {
   x: number;
   y: number;
-};
-type Rect = Point & {
+}
+interface Rect extends Point {
   width: number;
   height: number;
-};
+}
 type Group = "green" | "red"; // 所属。所属が異なる場合に当たり判定を行う
-type Body = Rect & {
+interface Body extends Rect {
   group: Group;
   hp: number;
   paralyzing: number; // ダメージ時の麻痺時間
-};
+}
 
-type Bullet = Body & {
+interface Bullet extends Body {
   dest: Point;
-};
+}
 
-type Player = Body & {
+interface Player extends Body {
   hp: number;
   speed: number;
   bullets: Bullet[];
   canShot: boolean;
   color: string;
-};
+}
 
 export const hitTestRect = (rect1: Rect, rect2: Rect) => {
   if (
@@ -213,12 +213,10 @@ const main = (viewport: HTMLCanvasElement): void => {
       const enemyRect = { x: e.x, y: e.y, width: e.width, height: e.height };
       const hit =
         player.bullets
-          .map((b) =>
-            hitTestRect(
-              { x: b.x, y: b.y, width: b.width, height: b.height },
-              enemyRect
-            )
-          )
+          .map((b) => {
+            if (b.group !== e.group) return false;
+            return hitTestRect(b, e);
+          })
           .filter((i) => i).length > 0;
       drawPlayer(newState, hit ? "white" : e.color);
       return newState;
