@@ -210,7 +210,6 @@ const main = (viewport: HTMLCanvasElement): void => {
             : newBullets,
       };
 
-      const enemyRect = { x: e.x, y: e.y, width: e.width, height: e.height };
       const hit =
         player.bullets
           .map((b) => {
