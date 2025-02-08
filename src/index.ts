@@ -1,29 +1,5 @@
-interface Point {
-  x: number;
-  y: number;
-}
-interface Rect extends Point {
-  width: number;
-  height: number;
-}
-type Group = "green" | "red"; // 所属。所属が異なる場合に当たり判定を行う
-interface Body extends Rect {
-  group: Group;
-  hp: number;
-  paralyzing: number; // ダメージ時の麻痺時間
-}
-
-interface Bullet extends Body {
-  dest: Point;
-}
-
-interface Player extends Body {
-  hp: number;
-  speed: number;
-  bullets: Bullet[];
-  canShot: boolean;
-  color: string;
-}
+import { drawBox, drawPixel } from "./sprite";
+import { Bullet, Creature, Rect } from "./type";
 
 export const hitTestRect = (rect1: Rect, rect2: Rect) => {
   if (
@@ -46,7 +22,7 @@ const main = (viewport: HTMLCanvasElement): void => {
   ctx.shadowOffsetY = 3;
   ctx.shadowBlur = 5;
 
-  let player: Player = {
+  let player: Creature = {
     group: "green",
     x: 32,
     y: viewport.height / 2,
@@ -54,13 +30,13 @@ const main = (viewport: HTMLCanvasElement): void => {
     height: 32,
     speed: 4,
     hp: 1,
-    bullets: [],
     canShot: true,
     color: "#FF9500",
     paralyzing: 0,
   };
 
-  let enemies: Player[] = [];
+  let enemies: Creature[] = [];
+  let bullets: Bullet[] = [];
 
   let upPressed: boolean = false;
   let downPressed: boolean = false;
@@ -94,25 +70,74 @@ const main = (viewport: HTMLCanvasElement): void => {
     false
   );
 
-  const drawBox = (r: Rect, color: string) => {
-    ctx.beginPath();
-    ctx.rect(r.x, r.y, r.width, r.height);
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.closePath();
-  };
-
-  const drawPlayer = (p: Player, color: string) => {
-    drawBox({ x: p.x, y: p.y, width: p.width, height: p.height }, color);
+  const drawPlayer = (p: Creature, color: string) => {
+    const times = p.width / 8;
+    drawPixel(
+      ctx,
+      { x: p.x, y: p.y, width: p.width, height: p.height },
+      color,
+      times
+    );
   };
   const drawBullet = (p: Bullet, color: string) => {
-    drawBox({ x: p.x, y: p.y, width: p.width, height: p.height }, color);
+    drawBox(ctx, { x: p.x, y: p.y, width: p.width, height: p.height }, color);
   };
 
+  const calcParalyzingTime = (damages: number, paralyzing: number) =>
+    damages ? paralyzing + damages : paralyzing > 0 ? paralyzing - 1 : 0;
   const draw = () => {
     // 背景の描画
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, viewport.width, viewport.height);
+
+    // 自分の判定
+    const damages =
+      enemies.reduce((sum, e) => {
+        if (player.group !== e.group && hitTestRect(player, e))
+          return (sum += 1);
+        return sum;
+      }, 0) +
+      bullets.reduce((sum, b) => {
+        if (player.group !== b.group && hitTestRect(player, b))
+          return (sum += 1);
+        return sum;
+      }, 0);
+    player.hp = player.hp - damages;
+    player.paralyzing = calcParalyzingTime(damages, player.paralyzing);
+    // 敵の判定
+    enemies = enemies.map((e) => {
+      const damages =
+        [player].reduce((sum, p) => {
+          if (p.group !== e.group && hitTestRect(p, e)) return (sum += 1);
+          return sum;
+        }, 0) +
+        bullets.reduce((sum, b) => {
+          if (b.group !== e.group && hitTestRect(b, e)) return (sum += 1);
+          return sum;
+        }, 0);
+      return {
+        ...e,
+        hp: e.hp - damages,
+        paralyzing: calcParalyzingTime(damages, e.paralyzing),
+      };
+    });
+    // 弾の判定
+    bullets = bullets.map((b) => {
+      const damages =
+        [player].reduce((sum, p) => {
+          if (p.group !== b.group && hitTestRect(p, b)) return (sum += 1);
+          return sum;
+        }, 0) +
+        enemies.reduce((sum, e) => {
+          if (e.group !== b.group && hitTestRect(e, b)) return (sum += 1);
+          return sum;
+        }, 0);
+      return {
+        ...b,
+        hp: b.hp - damages,
+        paralyzing: calcParalyzingTime(damages, b.paralyzing),
+      };
+    });
 
     // 自機の移動
     const newPlayerY =
@@ -126,21 +151,21 @@ const main = (viewport: HTMLCanvasElement): void => {
     // 自機のshot
     if (shotPressed) {
       if (player.canShot) {
+        bullets = [
+          ...bullets,
+          {
+            group: player.group,
+            x: player.x + player.width,
+            y: player.y + player.width / 2,
+            width: 8,
+            height: 2,
+            dest: { x: 16, y: 0 },
+            hp: 1,
+          } as Bullet,
+        ];
         player = {
           ...player,
           canShot: false,
-          bullets: [
-            ...player.bullets,
-            {
-              group: player.group,
-              x: player.x + player.width,
-              y: player.y + player.width / 2,
-              width: 8,
-              height: 2,
-              dest: { x: 8, y: 0 },
-              hp: 1,
-            } as Bullet,
-          ],
         };
       }
     } else {
@@ -148,7 +173,8 @@ const main = (viewport: HTMLCanvasElement): void => {
     }
 
     // 弾丸の描画
-    player.bullets = player.bullets
+    bullets = bullets
+      .filter((b) => b.hp)
       .map((b) => {
         const next: Bullet = { ...b, x: b.x + b.dest.x, y: b.y + b.dest.y };
         if (
@@ -164,66 +190,51 @@ const main = (viewport: HTMLCanvasElement): void => {
       })
       .filter((bullet): bullet is Bullet => bullet !== null);
 
-    drawPlayer(player, player.color);
+    drawPlayer(player, player.paralyzing ? "white" : player.color);
 
     // 敵の描画
-    enemies = enemies.map((e) => {
-      const newPoint = {
-        x: e.x + e.width < 0 ? viewport.width * 2 : e.x - e.speed,
-        y:
-          e.y - (player.y < e.y ? e.speed : 0) + (player.y > e.y ? e.speed : 0),
-      };
+    enemies = enemies
+      .filter((e) => e.hp)
+      .map((e) => {
+        const newState: Creature = {
+          ...e,
+          x: e.x + e.width < 0 ? viewport.width * 2 : e.x - e.speed,
+          y:
+            e.y -
+            (player.y < e.y ? e.speed : 0) +
+            (player.y > e.y ? e.speed : 0),
+        };
+        if (
+          newState.x < 0 ||
+          newState.y < 0 ||
+          newState.x + e.width > viewport.width ||
+          newState.y + e.height > viewport.height
+        ) {
+          return null;
+        }
 
-      const newBullets = e.bullets
-        .map((i) => {
-          const next: Bullet = { ...i, x: i.x + i.dest.x, y: i.y + i.dest.y };
-          if (
-            next.x < 0 ||
-            next.y < 0 ||
-            next.x + next.width > viewport.width ||
-            next.y + next.height > viewport.height
-          ) {
-            return null;
-          }
-          drawBullet(next, "white");
-          return next;
-        })
-        .filter((bullet): bullet is Bullet => bullet !== null);
-
-      const newState: Player = {
-        ...e,
-        ...newPoint,
-        bullets:
-          Math.random() < 0.02
-            ? [
-                ...newBullets,
-                {
-                  group: e.group,
-                  x: e.x,
-                  y: e.y + e.width / 2,
-                  width: 8,
-                  height: 2,
-                  dest: { x: -8, y: 0 },
-                  hp: 1,
-                } as Bullet,
-              ]
-            : newBullets,
-      };
-
-      const hit =
-        player.bullets
-          .map((b) => {
-            if (b.group !== e.group) return false;
-            return hitTestRect(b, e);
-          })
-          .filter((i) => i).length > 0;
-      drawPlayer(newState, hit ? "white" : e.color);
-      return newState;
-    });
+        if (Math.random() < 0.02) {
+          bullets = [
+            ...bullets,
+            {
+              group: e.group,
+              x: e.x,
+              y: e.y + e.width / 2,
+              width: 8,
+              height: 2,
+              dest: { x: -8, y: 0 },
+              hp: 1,
+            } as Bullet,
+          ];
+        }
+        drawPlayer(newState, newState.paralyzing ? "white" : newState.color);
+        return newState;
+      })
+      .filter((enemy): enemy is Creature => enemy !== null);
 
     // 敵の発生
-    if (Math.random() < 0.01) {
-      const option = Math.random() * 4;
+    if (Math.random() < 0.02) {
+      const randomInt = Math.floor(Math.random() * 3) + 1;
       const color = `rgb(${Math.random() * 256},${Math.random() * 256},${
         Math.random() * 256
       })`;
@@ -231,13 +242,12 @@ const main = (viewport: HTMLCanvasElement): void => {
         ...enemies,
         {
           group: "red",
-          x: viewport.width - 32 * 2 - option * 16,
+          x: viewport.width - 64,
           y: 0,
-          width: 16 + 8 * option,
-          height: 16 + 8 * option,
+          width: 16 * randomInt,
+          height: 16 * randomInt,
           speed: 2,
           hp: 1,
-          bullets: [],
           canShot: true,
           color,
           paralyzing: 0,
