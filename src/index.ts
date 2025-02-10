@@ -17,7 +17,7 @@ const main = (viewport: HTMLCanvasElement): void => {
   const ctx = viewport.getContext("2d");
   if (!ctx) return;
   ctx.textBaseline = "top";
-  ctx.shadowColor = "blue";
+  ctx.shadowColor = "gray";
   ctx.shadowOffsetX = 3;
   ctx.shadowOffsetY = 3;
   ctx.shadowBlur = 5;
