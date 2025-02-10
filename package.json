@@ -5,7 +5,7 @@
   "main": "dist/bundle.js",
   "scripts": {
     "build": "webpack",
-    "start": "node server.js"
+    "start": "webpack && node server.js"
   },
   "author": "",
   "license": "MIT",
