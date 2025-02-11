@@ -3,15 +3,12 @@ const path = require("path");
 const app = express();
 const port = 3000;
 
-// dist ディレクトリの静的ファイル（bundle.js）を提供
-app.use("/dist", express.static(path.join(__dirname, "dist")));
+// dist フォルダ内のすべての静的ファイルを提供する
+app.use(express.static(path.join(__dirname, "dist")));
 
-// src ディレクトリの静的ファイル（index.html など）を提供
-app.use(express.static(path.join(__dirname, "src")));
-
-// ルート URL にアクセスされたら src/index.html を返す
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "src/index.html"));
+// 全てのルートで dist/index.html を返す（SPAの場合など）
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 
 app.listen(port, () => {
