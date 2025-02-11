@@ -20,6 +20,7 @@ module.exports = {
   output: {
     filename: "bundle.js",
     path: path.resolve(__dirname, "dist"),
+    publicPath: process.env.PUBLIC_URL || "/", // GitHub Actions で渡された PUBLIC_URL を利用する
   },
   plugins: [
     new CopyWebpackPlugin({
