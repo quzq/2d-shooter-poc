@@ -12,21 +12,16 @@ export const drawBox = (
   ctx.closePath();
 };
 
-const picPaletteData = [
-  `rgb(${0},${0},${0})`,
-  `rgb(${0},${3},${101})`,
-  `rgb(${100},${23},${211})`,
-  `rgb(${250},${233},${11})`,
-];
+const picPaletteData = ["#d27fbc", "#459245", "#f9c367"];
 const picData = [
-  [0, 0, 1, 1, 1, 1, 0, 0],
-  [0, 1, 1, 1, 1, 1, 1, 0],
-  [1, 1, 1, 1, 1, 1, 1, 1],
-  [2, 1, 1, 1, 1, 1, 1, 1],
-  [2, 1, 1, 0, 1, 1, 0, 1],
-  [2, 1, 1, 1, 1, 1, 1, 1],
-  [0, 1, 0, 0, 0, 0, 1, 0],
-  [0, 0, 1, 1, 1, 1, 0, 0],
+  [0, 0, 3, 3, 1, 1, 0, 0],
+  [0, 3, 3, 3, 3, 1, 1, 0],
+  [3, 3, 3, 3, 3, 3, 1, 1],
+  [3, 3, 2, 3, 3, 2, 1, 1],
+  [3, 3, 2, 3, 3, 2, 1, 1],
+  [3, 3, 3, 3, 3, 3, 1, 1],
+  [0, 3, 3, 3, 3, 1, 1, 0],
+  [3, 3, 3, 0, 0, 3, 1, 1],
 ];
 
 export const drawPixel = (
@@ -41,7 +36,7 @@ export const drawPixel = (
       if (col !== 0) {
         ctx.beginPath();
         ctx.rect(r.x + i * times, r.y + j * times, times - 1, times - 1);
-        ctx.fillStyle = picPaletteData[col];
+        ctx.fillStyle = picPaletteData[col - 1];
         ctx.fill();
         ctx.closePath();
       }
