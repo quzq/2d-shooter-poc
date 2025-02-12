@@ -1,7 +1,7 @@
 const express = require("express");
 const path = require("path");
 const app = express();
-const port = 3000;
+const port = 3005;
 
 // dist フォルダ内のすべての静的ファイルを提供する
 app.use(express.static(path.join(__dirname, "dist")));
