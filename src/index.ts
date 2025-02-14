@@ -28,7 +28,7 @@ const main = (viewport: HTMLCanvasElement): void => {
     y: viewport.height / 2,
     width: 32,
     height: 32,
-    speed: 4,
+    speed: 2,
     hp: 1,
     canShot: true,
     color: "#FF9500",
@@ -41,6 +41,12 @@ const main = (viewport: HTMLCanvasElement): void => {
   let upPressed: boolean = false;
   let downPressed: boolean = false;
   let shotPressed: boolean = false;
+
+  // FPS計測用変数
+  let lastTime = performance.now();
+  let lastFpsUpdate = lastTime;
+  let fpsCounter = 0;
+  let fpsDisplay = 0;
 
   document.addEventListener(
     "keydown",
@@ -85,10 +91,27 @@ const main = (viewport: HTMLCanvasElement): void => {
 
   const calcParalyzingTime = (damages: number, paralyzing: number) =>
     damages ? paralyzing + damages : paralyzing > 0 ? paralyzing - 1 : 0;
-  const draw = () => {
+
+  const draw = (time: number): void => {
+    const deltaTime = (time - lastTime) / 1000; // 秒単位
+    lastTime = time;
+
+    // FPS計測：1秒ごとに更新
+    fpsCounter++;
+    if (time - lastFpsUpdate >= 1000) {
+      fpsDisplay = fpsCounter;
+      fpsCounter = 0;
+      lastFpsUpdate = time;
+    }
+
     // 背景の描画
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, viewport.width, viewport.height);
+
+    // FPS表示（左上に白文字）
+    ctx.fillStyle = "white";
+    ctx.font = "20px Arial";
+    ctx.fillText(`fps : ${fpsDisplay}`, 10, 30);
 
     // 自分の判定
     const damages =
@@ -246,7 +269,7 @@ const main = (viewport: HTMLCanvasElement): void => {
           y: 0,
           width: 16 * randomInt,
           height: 16 * randomInt,
-          speed: 2,
+          speed: 1,
           hp: 1,
           canShot: true,
           color,
@@ -257,7 +280,7 @@ const main = (viewport: HTMLCanvasElement): void => {
 
     requestAnimationFrame(draw);
   };
-  draw();
+  requestAnimationFrame(draw);
 };
 
 main(<HTMLCanvasElement>document.getElementById("viewport"));
