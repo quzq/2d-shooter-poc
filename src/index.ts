@@ -28,7 +28,7 @@ const main = (viewport: HTMLCanvasElement): void => {
     y: viewport.height / 2,
     width: 32,
     height: 32,
-    speed: 2,
+    speed: 120,
     hp: 1,
     canShot: true,
     color: "#FF9500",
@@ -165,9 +165,9 @@ const main = (viewport: HTMLCanvasElement): void => {
     // 自機の移動
     const newPlayerY =
       player.y -
-      (upPressed && player.y > 0 ? player.speed : 0) +
+      (upPressed && player.y > 0 ? player.speed * deltaTime : 0) +
       (downPressed && player.y + player.height < viewport.height
-        ? player.speed
+        ? player.speed * deltaTime
         : 0);
     player = { ...player, y: newPlayerY };
 
@@ -182,7 +182,7 @@ const main = (viewport: HTMLCanvasElement): void => {
             y: player.y + player.width / 2,
             width: 8,
             height: 2,
-            dest: { x: 16, y: 0 },
+            dest: { x: 300, y: 0 },
             hp: 1,
           } as Bullet,
         ];
@@ -199,7 +199,11 @@ const main = (viewport: HTMLCanvasElement): void => {
     bullets = bullets
       .filter((b) => b.hp)
       .map((b) => {
-        const next: Bullet = { ...b, x: b.x + b.dest.x, y: b.y + b.dest.y };
+        const next: Bullet = {
+          ...b,
+          x: b.x + b.dest.x * deltaTime,
+          y: b.y + b.dest.y * deltaTime,
+        };
         if (
           next.x < 0 ||
           next.y < 0 ||
@@ -221,11 +225,11 @@ const main = (viewport: HTMLCanvasElement): void => {
       .map((e) => {
         const newState: Creature = {
           ...e,
-          x: e.x + e.width < 0 ? viewport.width * 2 : e.x - e.speed,
+          x: e.x + e.width < 0 ? viewport.width * 2 : e.x - e.speed * deltaTime,
           y:
             e.y -
-            (player.y < e.y ? e.speed : 0) +
-            (player.y > e.y ? e.speed : 0),
+            (player.y < e.y ? e.speed * deltaTime : 0) +
+            (player.y > e.y ? e.speed * deltaTime : 0),
         };
         if (
           newState.x < 0 ||
@@ -245,7 +249,7 @@ const main = (viewport: HTMLCanvasElement): void => {
               y: e.y + e.width / 2,
               width: 8,
               height: 2,
-              dest: { x: -8, y: 0 },
+              dest: { x: -200, y: 0 },
               hp: 1,
             } as Bullet,
           ];
@@ -269,7 +273,7 @@ const main = (viewport: HTMLCanvasElement): void => {
           y: 0,
           width: 16 * randomInt,
           height: 16 * randomInt,
-          speed: 1,
+          speed: 160,
           hp: 1,
           canShot: true,
           color,
