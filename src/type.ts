@@ -22,7 +22,7 @@ export interface Bullet extends Body {
 
 export interface Creature extends Body {
   hp: number;
-  speed: number;
+  speed: number; // 1秒あたりの移動距離（pixel）
   canShot: boolean;
-  color: string;
+  //color: string;
 }
