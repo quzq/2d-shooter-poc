@@ -31,7 +31,6 @@ const main = (viewport: HTMLCanvasElement): void => {
     speed: 120,
     hp: 1,
     canShot: true,
-    color: "#FF9500",
     paralyzing: 0,
   };
 
@@ -76,7 +75,7 @@ const main = (viewport: HTMLCanvasElement): void => {
     false
   );
 
-  const drawPlayer = (p: Creature, color: string) => {
+  const drawPlayer = (p: Creature, color: string | null) => {
     const times = p.width / 8;
     drawPixel(
       ctx,
@@ -217,7 +216,7 @@ const main = (viewport: HTMLCanvasElement): void => {
       })
       .filter((bullet): bullet is Bullet => bullet !== null);
 
-    drawPlayer(player, player.paralyzing ? "white" : player.color);
+    drawPlayer(player, player.paralyzing ? "white" : null);
 
     // 敵の描画
     enemies = enemies
@@ -254,7 +253,7 @@ const main = (viewport: HTMLCanvasElement): void => {
             } as Bullet,
           ];
         }
-        drawPlayer(newState, newState.paralyzing ? "white" : newState.color);
+        drawPlayer(newState, newState.paralyzing ? "white" : null);
         return newState;
       })
       .filter((enemy): enemy is Creature => enemy !== null);
@@ -262,9 +261,9 @@ const main = (viewport: HTMLCanvasElement): void => {
     // 敵の発生
     if (Math.random() < 0.02) {
       const randomInt = Math.floor(Math.random() * 3) + 1;
-      const color = `rgb(${Math.random() * 256},${Math.random() * 256},${
-        Math.random() * 256
-      })`;
+      // const color = `rgb(${Math.random() * 256},${Math.random() * 256},${
+      //   Math.random() * 256
+      // })`;
       enemies = [
         ...enemies,
         {
@@ -276,7 +275,7 @@ const main = (viewport: HTMLCanvasElement): void => {
           speed: 160,
           hp: 1,
           canShot: true,
-          color,
+          //color,
           paralyzing: 0,
         },
       ];

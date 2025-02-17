@@ -27,7 +27,7 @@ const picData = [
 export const drawPixel = (
   ctx: CanvasRenderingContext2D,
   r: Rect,
-  color: string,
+  color: string | null,
   times: number
 ) => {
   for (let i = 0; i < 8; i++) {
@@ -36,7 +36,7 @@ export const drawPixel = (
       if (col !== 0) {
         ctx.beginPath();
         ctx.rect(r.x + i * times, r.y + j * times, times - 1, times - 1);
-        ctx.fillStyle = picPaletteData[col - 1];
+        ctx.fillStyle = color || picPaletteData[col - 1];
         ctx.fill();
         ctx.closePath();
       }
