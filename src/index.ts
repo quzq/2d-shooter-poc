@@ -1,3 +1,4 @@
+import { acceleratingBehavior, zigzagBehavior } from "./behaviors";
 import { drawBox, drawPixel } from "./sprite";
 import { Bullet, Creature, Rect } from "./type";
 
@@ -32,6 +33,7 @@ const main = (viewport: HTMLCanvasElement): void => {
     hp: 1,
     canShot: true,
     paralyzing: 0,
+    behavior: (self: Creature, deltaTime: number): Creature => self,
   };
 
   let enemies: Creature[] = [];
@@ -222,19 +224,22 @@ const main = (viewport: HTMLCanvasElement): void => {
     enemies = enemies
       .filter((e) => e.hp)
       .map((e) => {
-        const newState: Creature = {
-          ...e,
-          x: e.x + e.width < 0 ? viewport.width * 2 : e.x - e.speed * deltaTime,
-          y:
-            e.y -
-            (player.y < e.y ? e.speed * deltaTime : 0) +
-            (player.y > e.y ? e.speed * deltaTime : 0),
-        };
+        // const updatedMe: Creature = {
+        //   ...e,
+        //   x: e.x + e.width < 0 ? viewport.width * 2 : e.x - e.speed * deltaTime,
+        //   y:
+        //     e.y -
+        //     (player.y < e.y ? e.speed * deltaTime : 0) +
+        //     (player.y > e.y ? e.speed * deltaTime : 0),
+        // };
+
+        // 挙動関数が定義されていれば呼び出す
+        const updatedMe = e.behavior ? e.behavior(e, deltaTime) : e;
         if (
-          newState.x < 0 ||
-          newState.y < 0 ||
-          newState.x + e.width > viewport.width ||
-          newState.y + e.height > viewport.height
+          updatedMe.x < 0 ||
+          updatedMe.y < 0 ||
+          updatedMe.x + e.width > viewport.width ||
+          updatedMe.y + e.height > viewport.height
         ) {
           return null;
         }
@@ -253,8 +258,8 @@ const main = (viewport: HTMLCanvasElement): void => {
             } as Bullet,
           ];
         }
-        drawPlayer(newState, newState.paralyzing ? "white" : null);
-        return newState;
+        drawPlayer(updatedMe, updatedMe.paralyzing ? "white" : null);
+        return updatedMe;
       })
       .filter((enemy): enemy is Creature => enemy !== null);
 
@@ -269,7 +274,7 @@ const main = (viewport: HTMLCanvasElement): void => {
         {
           group: "red",
           x: viewport.width - 64,
-          y: 0,
+          y: 10 + randomInt * 100,
           width: 16 * randomInt,
           height: 16 * randomInt,
           speed: 160,
@@ -277,6 +282,18 @@ const main = (viewport: HTMLCanvasElement): void => {
           canShot: true,
           //color,
           paralyzing: 0,
+          behavior: acceleratingBehavior,
+          // behavior: (self: Creature, deltaTime: number): Creature => {
+          //   const newY =
+          //     self.y -
+          //     (player.y < self.y ? self.speed * deltaTime : 0) +
+          //     (player.y > self.y ? self.speed * deltaTime : 0);
+          //   return {
+          //     ...self,
+          //     x: self.x - self.speed * deltaTime,
+          //     y: newY,
+          //   };
+          // },
         },
       ];
     }
