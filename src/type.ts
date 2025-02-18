@@ -24,5 +24,7 @@ export interface Creature extends Body {
   hp: number;
   speed: number; // 1秒あたりの移動距離（pixel）
   canShot: boolean;
+  //shot: boolean;
+  behavior: (self: Creature, deltaTime: number) => Creature;
   //color: string;
 }
