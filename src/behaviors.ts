@@ -72,3 +72,17 @@ const retreatBehaviorFactory = (player: Creature, safeDistance: number) => {
     }
   };
 };
+
+export const ySyncBehaviorFactory = (player: Creature) => {
+  return (self: Creature, deltaTime: number): Creature => {
+    const newY =
+      self.y -
+      (player.y < self.y ? self.speed * deltaTime : 0) +
+      (player.y > self.y ? self.speed * deltaTime : 0);
+    return {
+      ...self,
+      x: self.x - self.speed * deltaTime,
+      y: newY,
+    };
+  };
+};
