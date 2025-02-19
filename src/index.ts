@@ -1,4 +1,8 @@
-import { acceleratingBehavior, zigzagBehavior } from "./behaviors";
+import {
+  acceleratingBehavior,
+  ySyncBehaviorFactory,
+  zigzagBehavior,
+} from "./behaviors";
 import { drawBox, drawPixel } from "./sprite";
 import { Bullet, Creature, Rect } from "./type";
 
@@ -224,15 +228,6 @@ const main = (viewport: HTMLCanvasElement): void => {
     enemies = enemies
       .filter((e) => e.hp)
       .map((e) => {
-        // const updatedMe: Creature = {
-        //   ...e,
-        //   x: e.x + e.width < 0 ? viewport.width * 2 : e.x - e.speed * deltaTime,
-        //   y:
-        //     e.y -
-        //     (player.y < e.y ? e.speed * deltaTime : 0) +
-        //     (player.y > e.y ? e.speed * deltaTime : 0),
-        // };
-
         // 挙動関数が定義されていれば呼び出す
         const updatedMe = e.behavior ? e.behavior(e, deltaTime) : e;
         if (
@@ -266,9 +261,7 @@ const main = (viewport: HTMLCanvasElement): void => {
     // 敵の発生
     if (Math.random() < 0.02) {
       const randomInt = Math.floor(Math.random() * 3) + 1;
-      // const color = `rgb(${Math.random() * 256},${Math.random() * 256},${
-      //   Math.random() * 256
-      // })`;
+
       enemies = [
         ...enemies,
         {
@@ -280,20 +273,9 @@ const main = (viewport: HTMLCanvasElement): void => {
           speed: 160,
           hp: 1,
           canShot: true,
-          //color,
+
           paralyzing: 0,
-          behavior: acceleratingBehavior,
-          // behavior: (self: Creature, deltaTime: number): Creature => {
-          //   const newY =
-          //     self.y -
-          //     (player.y < self.y ? self.speed * deltaTime : 0) +
-          //     (player.y > self.y ? self.speed * deltaTime : 0);
-          //   return {
-          //     ...self,
-          //     x: self.x - self.speed * deltaTime,
-          //     y: newY,
-          //   };
-          // },
+          behavior: ySyncBehaviorFactory(player),
         },
       ];
     }
