@@ -1,97 +1,127 @@
-# 2D Shooting Game
+# 2D Shooter Game
 
-A simple 2D shooting game built with TypeScript and HTML5 Canvas. In this game, you control a player character that moves vertically and shoots bullets at incoming enemies. The game features collision detection, enemy spawning, and smooth canvas animations.
-
----
-
-## Overview
-
-The game is designed to be lightweight and straightforward. It includes the following key elements:
-
-- **Player Movement:** The player can move up and down along the left side of the screen.
-- **Shooting Mechanics:** Pressing the Control key fires bullets toward the right.
-- **Enemy Behavior:** Enemies spawn randomly from the right and move across the screen. They adjust their vertical position relative to the player, and they can also shoot bullets.
-- **Collision Detection:** A hit test function determines if bullets collide with enemies, causing visual feedback (the enemy changes color when hit).
-- **Canvas Rendering:** All game elements are rendered using the HTML5 Canvas API with simple effects such as shadows.
-
----
+A simple 2D shooter game built with TypeScript and HTML5 Canvas. This project demonstrates basic game mechanics such as player movement, enemy behaviors, collision detection, and customizable enemy behavior injection.
 
 ## Features
 
-- **Responsive Player Control:** Use keyboard events to move the player and shoot.
-- **Dynamic Enemy Generation:** Enemies are generated with varying sizes, speeds, and colors.
-- **Bullet Management:** Bullets are created, updated, and filtered out when they go off-screen using native array methods.
-- **Collision Detection:** Efficient rectangle-based collision checking ensures that gameplay interactions are handled correctly.
-- **TypeScript Powered:** The code utilizes TypeScript for clear type definitions (e.g., `TPoint`, `TRect`, `TBullet`, `TPlayer`).
+- **Player Movement:**  
+  The player can move vertically using the arrow keys and shoot using the Control key.
 
----
+- **Enemy Generation and Behavior:**  
+  Enemies are dynamically generated with various behaviors. Their movement patterns can be customized using behavior functions. For example, enemies can move in a zigzag pattern, accelerate, or retreat and shoot when the player gets too close.
+
+- **Collision Detection:**  
+  Basic rectangle-based collision detection is implemented to handle interactions between the player, enemies, and bullets.
+
+- **Customizable Behavior Injection:**  
+  Enemy behavior is injected via behavior functions (e.g., `moveLeftBehavior`, `zigzagBehavior`, `acceleratingBehavior`, `ySyncBehaviorFactory`, and `retreatAndShootBehaviorFactory`). This allows you to easily add new enemy movement patterns.
+
+- **FPS Counter:**  
+  A simple FPS counter is displayed on-screen for performance monitoring.
+
+## File Structure
+
+- **index.ts:**  
+  Contains the main game loop, input handling, and overall game state management. This file integrates the player, enemies, and bullet updates, along with collision detection and drawing routines.
+
+- **sprite.ts:**  
+  Provides drawing functions for rendering rectangles and pixel art on the HTML5 Canvas. The pixel art is drawn using an 8x8 grid based on preset palette and pixel data.
+
+- **behaviors.ts:**  
+  Defines various enemy behavior functions. These include:
+
+  - `moveLeftBehavior`: Moves the enemy steadily to the left.
+  - `zigzagBehavior`: Moves the enemy left while oscillating vertically.
+  - `acceleratingBehavior`: Moves the enemy left while gradually accelerating.
+  - `ySyncBehaviorFactory`: Creates a behavior function that synchronizes vertical movement with the player's position.
+  - `retreatAndShootBehaviorFactory`: When an enemy gets too close to the player, it retreats (moves right) and sets a flag to shoot.
+
+- **type.ts:**  
+  Contains TypeScript interfaces and type definitions for game entities:
+  - `Point` and `Rect` for basic geometry.
+  - `Body` which extends `Rect` with additional properties.
+  - `Creature` representing a game character (player or enemy), including movement speed, hit points, and an optional `behavior` function.
+  - `Bullet` which extends `Body` and adds a destination point.
 
 ## Installation
 
-1. **Clone or Download:** Obtain the source code from the repository.
-2. **Setup HTML:** Ensure you have an HTML file that contains a canvas element with the ID `viewport`. For example:
+1. **Clone the Repository:**  
+   Clone this repository to your local machine.
 
-   ```html
-   <!DOCTYPE html>
-   <html lang="en">
-     <head>
-       <meta charset="UTF-8" />
-       <title>2D Shooting Game</title>
-     </head>
-     <body>
-       <canvas id="viewport" width="800" height="600"></canvas>
-       <script src="path/to/compiled/script.js"></script>
-     </body>
-   </html>
+2. **Install Dependencies:**  
+   Ensure you have Node.js installed. Then, run:
+
+   ```bash
+   npm install
    ```
 
-3. **Compile the Code:** Use the TypeScript compiler (`tsc`) to compile the TypeScript source into JavaScript.
-4. **Run the Game:** Open the HTML file in any modern browser that supports HTML5 Canvas.
+   (Adjust based on your project's setup, for example if you are using a bundler like webpack or a TypeScript build process.)
 
----
+3. **Compile the Code:**  
+   Use the TypeScript compiler:
+
+   ```bash
+   npx tsc
+   ```
+
+   This will compile the TypeScript source files into JavaScript.
+
+4. **Run the Game:**  
+   Open the `index.html` file in a modern browser that supports HTML5 Canvas. Make sure your canvas element has the correct ID (e.g., `viewport`).
 
 ## Controls
 
-- **Move Up:** Press the `Up Arrow` or `ArrowUp` key.
-- **Move Down:** Press the `Down Arrow` or `ArrowDown` key.
-- **Shoot:** Press the `Control` key.
+- **Move Up:** Press `Up` or `ArrowUp`
+- **Move Down:** Press `Down` or `ArrowDown`
+- **Shoot:** Press `Control`
 
----
+## Customizing Enemy Behavior
 
-## How to Play
+The game leverages customizable behavior functions to define enemy movement. You can modify or add new behavior functions in `behaviors.ts`. For example, you can adjust the `retreatAndShootBehaviorFactory` to change the safe distance or the shooting frequency.
 
-1. **Launch the Game:** Open the HTML file in your browser.
-2. **Control the Player:** Use the designated keys to move up and down.
-3. **Fire Bullets:** Hold down the Control key to shoot. The player fires bullets that travel horizontally.
-4. **Defeat Enemies:** Aim and shoot at the incoming enemies. When a bullet collides with an enemy, the enemy flashes (changes color) to indicate a hit.
-5. **Enjoy:** Survive as long as you can while the enemies keep coming!
+```ts
+export const retreatAndShootBehaviorFactory = (
+  player: Creature,
+  safeDistance: number
+) => {
+  return (self: Creature, deltaTime: number): Creature => {
+    const distance = getDistance(self, player);
+    if (distance < safeDistance) {
+      return {
+        ...self,
+        x: self.x + self.speed * deltaTime,
+        shoot: true,
+      };
+    } else {
+      return {
+        ...self,
+        x: self.x - self.speed * deltaTime,
+        shoot: false,
+      };
+    }
+  };
+};
+```
 
----
+Simply inject the desired behavior when generating enemies in `index.ts`:
 
-## Code Structure
-
-- **Type Definitions:**
-  - `TPoint`, `TRect`, `TBullet`, and `TPlayer` define the data structures for points, rectangles, bullets, and players respectively.
-- **Game Loop:**
-  - The game uses `requestAnimationFrame` to create a smooth, continuous loop for updating game state and rendering frames.
-- **Event Handling:**
-  - Keydown and keyup events are set up to track player movement and shooting actions.
-- **Collision Detection:**
-  - The `hitTestRect` function checks for overlapping rectangles to detect collisions between bullets and enemies.
-- **Array Management:**
-  - Bullets are updated and then filtered using a type guard to remove any `null` values from the array, ensuring type safety.
-
----
-
-## Future Improvements
-
-- **Sound Effects and Music:** Add audio to enhance the gameplay experience.
-- **Scoring System:** Implement scoring based on enemy hits and survival time.
-- **Enhanced Enemy AI:** Introduce more complex enemy behavior and additional enemy types.
-- **Visual Effects:** Improve animations and add visual effects for collisions and explosions.
-- **Power-Ups:** Include power-ups to upgrade player abilities and add strategic depth.
-
----
+```ts
+enemies = [
+  ...enemies,
+  {
+    group: "red",
+    x: viewport.width - 64,
+    y: 10 + randomInt * 100,
+    width: 16 * randomInt,
+    height: 16 * randomInt,
+    speed: 200,
+    hp: 1,
+    canShot: true,
+    paralyzing: 0,
+    behavior: retreatAndShootBehaviorFactory(player, 100),
+  },
+];
+```
 
 ## License
 

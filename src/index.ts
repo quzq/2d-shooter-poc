@@ -248,7 +248,7 @@ const main = (viewport: HTMLCanvasElement): void => {
               y: e.y + e.width / 2,
               width: 8,
               height: 2,
-              dest: { x: -200, y: 0 },
+              dest: { x: -300, y: 0 },
               hp: 1,
             } as Bullet,
           ];
@@ -270,12 +270,13 @@ const main = (viewport: HTMLCanvasElement): void => {
           y: 10 + randomInt * 100,
           width: 16 * randomInt,
           height: 16 * randomInt,
-          speed: 160,
+          speed: 200,
           hp: 1,
           canShot: true,
 
           paralyzing: 0,
-          behavior: ySyncBehaviorFactory(player),
+          behavior: zigzagBehavior,
+          //behavior: ySyncBehaviorFactory(player),
         },
       ];
     }
