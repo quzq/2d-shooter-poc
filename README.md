@@ -2,6 +2,11 @@
 
 A simple 2D shooter game built with TypeScript and HTML5 Canvas. This project demonstrates basic game mechanics such as player movement, enemy behaviors, collision detection, and customizable enemy behavior injection.
 
+# Deployed Site
+
+The application is deployed and can be accessed at:
+https://quzq.github.io/2d-shooter-poc/
+
 ## Features
 
 - **Player Movement:**  
