@@ -27,4 +27,6 @@ export interface Creature extends Body {
   //shot: boolean;
   behavior: (self: Creature, deltaTime: number) => Creature;
   //color: string;
+  paletteName: "foo" | "bar";
+  patternName: "foo" | "bar";
 }
