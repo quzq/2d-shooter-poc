@@ -38,6 +38,8 @@ const main = (viewport: HTMLCanvasElement): void => {
     canShot: true,
     paralyzing: 0,
     behavior: (self: Creature, deltaTime: number): Creature => self,
+    paletteName: "bar",
+    patternName: "bar",
   };
 
   let enemies: Creature[] = [];
@@ -87,7 +89,9 @@ const main = (viewport: HTMLCanvasElement): void => {
       ctx,
       { x: p.x, y: p.y, width: p.width, height: p.height },
       color,
-      times
+      times,
+      p.paletteName,
+      p.patternName
     );
   };
   const drawBullet = (p: Bullet, color: string) => {
@@ -273,10 +277,11 @@ const main = (viewport: HTMLCanvasElement): void => {
           speed: 200,
           hp: 1,
           canShot: true,
-
           paralyzing: 0,
-          behavior: zigzagBehavior,
-          //behavior: ySyncBehaviorFactory(player),
+          //behavior: zigzagBehavior,
+          behavior: ySyncBehaviorFactory(player),
+          paletteName: "foo",
+          patternName: "foo",
         },
       ];
     }
