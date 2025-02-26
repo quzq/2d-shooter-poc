@@ -37,6 +37,7 @@ export const acceleratingBehavior = (
 
 export const ySyncBehaviorFactory = (player: Creature) => {
   return (self: Creature, deltaTime: number): Creature => {
+    const shot = player.x + 200 < self.x && Math.random() < 0.02;
     const newY =
       self.y -
       (player.y < self.y ? self.speed * deltaTime : 0) +
@@ -45,6 +46,7 @@ export const ySyncBehaviorFactory = (player: Creature) => {
       ...self,
       x: self.x - self.speed * deltaTime,
       y: newY,
+      shot,
     };
   };
 };

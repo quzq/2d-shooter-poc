@@ -36,6 +36,7 @@ const main = (viewport: HTMLCanvasElement): void => {
     speed: 120,
     hp: 1,
     canShot: true,
+    shot: false,
     paralyzing: 0,
     behavior: (self: Creature, deltaTime: number): Creature => self,
     paletteName: "bar",
@@ -243,7 +244,7 @@ const main = (viewport: HTMLCanvasElement): void => {
           return null;
         }
 
-        if (Math.random() < 0.02) {
+        if (updatedMe.shot) {
           bullets = [
             ...bullets,
             {
@@ -278,6 +279,7 @@ const main = (viewport: HTMLCanvasElement): void => {
           hp: 1,
           canShot: true,
           paralyzing: 0,
+          shot: false,
           //behavior: zigzagBehavior,
           behavior: ySyncBehaviorFactory(player),
           paletteName: "foo",
