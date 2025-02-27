@@ -3,6 +3,7 @@ import {
   ySyncBehaviorFactory,
   zigzagBehavior,
 } from "./behaviors";
+import { createEnemy, EnemyType } from "./enemyFactory";
 import { drawBox, drawPixel } from "./sprite";
 import { Bullet, Creature, Rect } from "./type";
 
@@ -266,26 +267,23 @@ const main = (viewport: HTMLCanvasElement): void => {
     // 敵の発生
     if (Math.random() < 0.02) {
       const randomInt = Math.floor(Math.random() * 3) + 1;
+      const x = viewport.width - 64;
+      const y = 10 + randomInt * 100;
 
-      enemies = [
-        ...enemies,
-        {
-          group: "red",
-          x: viewport.width - 64,
-          y: 10 + randomInt * 100,
-          width: 16 * randomInt,
-          height: 16 * randomInt,
-          speed: 200,
-          hp: 1,
-          canShot: true,
-          paralyzing: 0,
-          shot: false,
-          //behavior: zigzagBehavior,
-          behavior: ySyncBehaviorFactory(player),
-          paletteName: "foo",
-          patternName: "foo",
-        },
-      ];
+      // 複数の敵パターンからランダムに選ぶ
+      const enemyTypes = [EnemyType.Accelerating, EnemyType.YSync];
+      const type = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+
+      const config = {
+        type,
+        x,
+        y,
+        viewportWidth: viewport.width,
+        viewportHeight: viewport.height,
+        player,
+      };
+      const newEnemy = createEnemy(config);
+      enemies = [...enemies, newEnemy];
     }
 
     requestAnimationFrame(draw);
